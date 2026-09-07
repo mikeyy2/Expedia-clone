@@ -1,4 +1,4 @@
-import axios from "axios";
+import { listUsers, createUser } from "../../api/firestore";
 import {
   GET_USERS,
   LOGIN_ERROR,
@@ -42,27 +42,25 @@ export const handlelogout_user = () => {
 
 export const userRigister = (userData) => async (dispatch) => {
   dispatch(register_request());
-  let res = await axios
-    .post(`http://localhost:8080/users`, userData)
-    .then((res) => {
-      dispatch(register_success(res.data));
-      // console.log(res.data)
-    })
-    .catch((err) => {
-      dispatch(register_error());
-    });
+  try {
+    const created = await createUser(userData);
+    dispatch(register_success(created));
+  } catch (err) {
+    console.error("register failed", err);
+    dispatch(register_error());
+  }
 };
 
 // get users
 
 export const fetch_users = (dispatch) => {
   dispatch(register_request());
-  axios
-    .get(`http://localhost:8080/users`)
-    .then((res) => {
-      dispatch(get_users(res.data));
+  listUsers()
+    .then((users) => {
+      dispatch(get_users(users));
     })
     .catch((err) => {
+      console.error("fetch users failed", err);
       dispatch(register_error());
     });
 };

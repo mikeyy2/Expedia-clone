@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { listThingsToDo } from '../../api/firestore';
 import React from 'react'
 import { useState } from 'react';
 import { useEffect } from 'react';
@@ -18,11 +18,10 @@ export const Destination = () => {
   
   
   useEffect(()=>{
-    axios.get(`http://localhost:8080/Things_todo?place=${place}`).then((response) => {
-        setPlaces(response.data)
-     console.log(response.data)
-    });
-  },[])
+    listThingsToDo(place)
+      .then((rows) => setPlaces(rows))
+      .catch((err) => console.error("fetch things to do failed", err));
+  },[place])
  
  
   return (

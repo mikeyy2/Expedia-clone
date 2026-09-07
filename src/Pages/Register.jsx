@@ -45,7 +45,7 @@ export const Register = () => {
   }
 
   //  capture
-  const handleRegisterUser = () => {
+  const handleRegisterUser = async () => {
     let newObj = {
       number,
       user_name,
@@ -55,7 +55,13 @@ export const Register = () => {
       gender: "",
       marital_status: null,
     };
-    dispatch(userRigister(newObj));
+    // Wait for the Firestore write to land before reloading the page. Navigating
+    // first can abort the in-flight request and silently drop the registration.
+    try {
+      await dispatch(userRigister(newObj));
+    } catch (err) {
+      console.error("registration failed", err);
+    }
     setCheck(state);
     window.location = "/login";
   };

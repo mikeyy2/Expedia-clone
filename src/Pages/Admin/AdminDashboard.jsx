@@ -1,4 +1,4 @@
-import axios from "axios";
+import { getCounts } from "../../api/firestore";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 // import { useDispatch } from "react-redux";
@@ -16,54 +16,24 @@ export const AdminDashboard = () => {
   const [things, setThings] = useState(0);
  const [loading, setLoading] = useState(false);
 
+  // One aggregation query per collection instead of downloading every document
+  // just to read .length - 5 billed reads rather than ~350.
   const getHotel = () => {
     setLoading(true);
-    axios
-      .get("http://localhost:8080/flight")
-      .then((res) => {
-        setFlight(res.data.length);
+    getCounts()
+      .then((counts) => {
+        setFlight(counts.flights);
+        setHotel(counts.hotels);
+        setUsers(counts.users);
+        setGiftCard(counts.giftcards);
+        setThings(counts.thingsToDo);
       })
       .catch((err) => {
-        console.log(err);
-      });
-    //
-    axios
-      .get("http://localhost:8080/hotel")
-      .then((res) => {
-        setHotel(res.data.length);
+        console.error("dashboard counts failed", err);
       })
-      .catch((err) => {
-        console.log(err);
+      .finally(() => {
+        setLoading(false);
       });
-    //
-    axios
-      .get("http://localhost:8080/users")
-      .then((res) => {
-        setUsers(res.data.length);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-      axios
-      .get("http://localhost:8080/giftcards")
-      .then((res) => {
-        setGiftCard(res.data.length);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    
-      axios
-      .get("http://localhost:8080/Things_todo")
-      .then((res) => {
-        setThings(res.data.length);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    
-    
   };
 
   useEffect(() => {

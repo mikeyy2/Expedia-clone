@@ -57,11 +57,7 @@
     ]
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "json-server": "^0.17.4"
-=======
     "firebase-admin": "^14.3.0",
-    "json-server": "^1.0.0-beta.15"
->>>>>>> 8c46b94bcad562adf9cc7d4662202c87f14a8bdb
+    "json-server": "^0.17.4"
   }
 }

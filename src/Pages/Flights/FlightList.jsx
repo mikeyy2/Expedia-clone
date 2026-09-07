@@ -1,15 +1,14 @@
 import React, { useEffect } from "react";
-import axios from "axios";
 import FlightCard from "./FlightCard";
+import { listFlights } from "../../api/firestore";
 
-const getData = async (page, priceValue) => {
-  let res = await axios.get(
-    `https://makemytrip-api-data.onrender.com/flight?_page=${page}&_limit=5?&price_gte=${
-      priceValue - 2000
-    }&price_lte=${priceValue}`
-  );
-  return res.data;
-};
+const getData = (page, priceValue) =>
+  listFlights({
+    page,
+    limit: 5,
+    priceMin: priceValue - 2000,
+    priceMax: priceValue,
+  });
 
 export default function FlightList({ page, priceValue }) {
   const [data, setData] = React.useState([]);

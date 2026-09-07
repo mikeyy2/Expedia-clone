@@ -1,5 +1,5 @@
 import { Box, Image, Flex, Button } from "@chakra-ui/react";
-import axios from "axios";
+import { addToCart } from "../../api/firestore";
 import { useToast } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
@@ -8,7 +8,9 @@ export default function FlightCard({ data }) {
   const toast = useToast();
 
   const handleClick = () => {
-    axios.post(`http://localhost:8000/flightcart`, data);
+    addToCart("flight", data).catch((err) =>
+      console.error("add to cart failed", err)
+    );
     //   .then((res) => console.log(res))
     //   .catch((err) => console.log(err))
 

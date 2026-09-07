@@ -1,4 +1,4 @@
-import axios from "axios";
+import { createHotel, listHotels, deleteHotel } from "../../api/firestore";
 import {
   SELECTED_DATE_AND_CITY,
   SELECTED_CITY,
@@ -47,29 +47,25 @@ export const selectCity = (selectedCity) => {
 export const addHotel = (payload) => (dispatch) => {
   dispatch(hotelRequest());
 
-  axios
-    .post("http://localhost:8080/hotel", payload)
+  createHotel(payload)
     .then(() => {
       dispatch(postHotelSuccess());
     })
     .catch((err) => {
+      console.error("add hotel failed", err);
       dispatch(hotelFailure());
     });
 };
 
-//http://localhost:8080/hotel?_sort=asc&_order=price&page=1&_limit=20
+// Browse hotels, 20 per page, optionally sorted.
 export const fetchingHotels = (sort, order, page) => async (dispatch) => {
-  console.log(order, sort,page);
   dispatch({ type: HOTEL_REQUEST });
   try {
-    const res = await axios.get(
-      `http://localhost:8080/hotel?_sort=${sort}&_order=${order}&_page=${page}&_limit=20`
-    );
-    console.log(res.data);
-    dispatch({ type: GET_HOTEL_SUCCESS, payload: res.data });
+    const hotels = await listHotels({ sort, order, page, limit: 20 });
+    dispatch({ type: GET_HOTEL_SUCCESS, payload: hotels });
   } catch (err) {
     dispatch({ type: HOTEL_FAILURE });
-    console.log(err);
+    console.error("fetch hotels failed", err);
   }
 };
 
@@ -81,17 +77,7 @@ export const fetchingHotels = (sort, order, page) => async (dispatch) => {
 
 export const DeleteHotel = (deleteId) => async (dispatch) => {
   try {
-    const res = await fetch(
-      `http://localhost:8080/hotel/${deleteId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    let data = await res.json();
-    console.log(data);
+    await deleteHotel(deleteId);
     dispatch(handleDeleteHotel(deleteId));
   } catch (e) {
     console.log(e);
