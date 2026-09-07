@@ -67,32 +67,43 @@ export const Register = () => {
   };
 
   // oonCapture
+  // Build the reCAPTCHA verifier once and reuse it. Constructing a second one
+  // against the same container throws "reCAPTCHA has already been rendered in
+  // this element", which used to land in an empty catch and hang the button.
+  // No callback here either: the old one re-entered handleVerifyNumber, which
+  // called onCapture again and re-triggered the same error.
   function onCapture() {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: (response) => {
-          handleVerifyNumber();
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-          // ...
-        },
-      },
-      auth
-    );
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        { size: "invisible" },
+        auth
+      );
+    }
+    return window.recaptchaVerifier;
+  }
+
+  // Let the next attempt start from a clean verifier after a failure.
+  function resetCaptcha() {
+    try {
+      window.recaptchaVerifier?.clear?.();
+    } catch (e) {
+      /* already torn down */
+    }
+    window.recaptchaVerifier = null;
   }
 
   //   Verify button
   function handleVerifyNumber() {
     document.querySelector("#nextButton").innerText = "Please wait...";
-    onCapture();
     const countryCode = process.env.REACT_APP_PHONE_COUNTRY_CODE || "+1";
     const phoneNumber = `${countryCode}${number}`;
-    const appVerifier = window.recaptchaVerifier;
+    const appVerifier = onCapture();
     if (number.length === 10) {
       if (exist) {
+        document.querySelector("#nextButton").innerText = "Next";
         document.querySelector("#loginMesageError").innerHTML =
-          "User Alredy exist";
+          "That number is already registered - use Sign In instead.";
         document.querySelector("#loginMesageSuccess").innerHTML = ``;
       } else {
         signInWithPhoneNumber(auth, phoneNumber, appVerifier)
@@ -109,6 +120,13 @@ export const Register = () => {
             // ...
           })
           .catch((error) => {
+            console.error("OTP send failed", error);
+            resetCaptcha();
+            const btn = document.querySelector("#nextButton");
+            if (btn) btn.innerText = "Next";
+            document.querySelector("#loginMesageSuccess").innerHTML = "";
+            document.querySelector("#loginMesageError").innerHTML =
+              "Could not send code: " + (error?.code || error?.message || "unknown error");
             // Error; SMS not sent
             // document.querySelector("#nextButton").innerText = 'Server Error'
             // ...
@@ -116,9 +134,10 @@ export const Register = () => {
       }
       //
     } else {
+      document.querySelector("#nextButton").innerText = "Next";
       document.querySelector("#loginMesageSuccess").innerHTML = ``;
       document.querySelector("#loginMesageError").innerHTML =
-        "Mobile Number is Invalid !";
+        "Enter a 10-digit number, digits only (no +1, no dashes).";
     }
   }
 

@@ -44,27 +44,37 @@ export const Login = () => {
   // console.log(user)
   //
 
+  // Build the reCAPTCHA verifier once and reuse it. Constructing a second one
+  // against the same container throws "reCAPTCHA has already been rendered in
+  // this element", which used to land in an empty catch and hang the button.
+  // No callback here either: the old one re-entered handleVerifyNumber, which
+  // called onCapture again and re-triggered the same error.
   function onCapture() {
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: (response) => {
-          handleVerifyNumber();
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-          // ...
-        },
-      },
-      auth
-    );
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        { size: "invisible" },
+        auth
+      );
+    }
+    return window.recaptchaVerifier;
+  }
+
+  // Let the next attempt start from a clean verifier after a failure.
+  function resetCaptcha() {
+    try {
+      window.recaptchaVerifier?.clear?.();
+    } catch (e) {
+      /* already torn down */
+    }
+    window.recaptchaVerifier = null;
   }
 
   function handleVerifyNumber() {
     document.querySelector("#nextText").innerText = "Please wait...";
-    onCapture();
     const countryCode = process.env.REACT_APP_PHONE_COUNTRY_CODE || "+1";
     const phoneNumber = `${countryCode}${number}`;
-    const appVerifier = window.recaptchaVerifier;
+    const appVerifier = onCapture();
     if (number.length === 10) {
       if (exist) {
         signInWithPhoneNumber(auth, phoneNumber, appVerifier)
@@ -81,23 +91,32 @@ export const Login = () => {
             // ...
           })
           .catch((error) => {
+            console.error("OTP send failed", error);
+            resetCaptcha();
+            const btn = document.querySelector("#nextText");
+            if (btn) btn.innerText = "Next";
+            document.querySelector("#loginMesageSuccess").innerHTML = "";
+            document.querySelector("#loginMesageError").innerHTML =
+              "Could not send code: " + (error?.code || error?.message || "unknown error");
             // Error; SMS not sent
             // document.querySelector("#nextText").innerText = "Server Error"
             // ...
           });
       } else {
+        document.querySelector("#nextText").innerText = "Next";
         document.querySelector("#loginMesageSuccess").innerHTML = ``;
         document.querySelector("#loginMesageError").innerHTML =
-          "User does not exist Please Create Your Account !";
+          "No account for that number - sending you to Sign Up.";
           setInterval(() => {
             window.location="/register"
           }, 1000);
       }
       //
     } else {
+      document.querySelector("#nextText").innerText = "Next";
       document.querySelector("#loginMesageSuccess").innerHTML = ``;
       document.querySelector("#loginMesageError").innerHTML =
-        "Mobile Number is Invalid !";
+        "Enter a 10-digit number, digits only (no +1, no dashes).";
     }
   }
 
