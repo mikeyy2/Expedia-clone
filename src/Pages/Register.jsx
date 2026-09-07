@@ -80,7 +80,8 @@ export const Register = () => {
   function handleVerifyNumber() {
     document.querySelector("#nextButton").innerText = "Please wait...";
     onCapture();
-    const phoneNumber = `+91${number}`;
+    const countryCode = process.env.REACT_APP_PHONE_COUNTRY_CODE || "+1";
+    const phoneNumber = `${countryCode}${number}`;
     const appVerifier = window.recaptchaVerifier;
     if (number.length === 10) {
       if (exist) {

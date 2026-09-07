@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Expedia-Clone security rules.
+// Catalog data is world-readable so the site works for signed-out visitors.
+// Anything user-owned or admin-managed requires authentication.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Public catalog - read by anyone, written only from the admin SDK
+    // (the migration script) or by an admin user.
+    match /hotels/{doc}    { allow read: if true; allow write: if isAdmin(); }
+    match /flights/{doc}   { allow read: if true; allow write: if isAdmin(); }
+    match /thingsToDo/{doc}{ allow read: if true; allow write: if isAdmin(); }
+    match /giftcards/{doc} { allow read: if true; allow write: if isAdmin(); }
+
+    // Carts - a signed-in user can only touch their own cart documents.
+    match /hotelCart/{doc} {
+      allow read, write: if isSignedIn() && ownsDoc();
+    }
+    match /flightCart/{doc} {
+      allow read, write: if isSignedIn() && ownsDoc();
+    }
+
+    // User profiles - readable by the owner, created on signup.
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Admin is granted by a custom claim set with the Admin SDK, never by a
+    // field in the document (a client could write that).
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function ownsDoc() {
+      return request.auth.uid == resource.data.uid
+          || request.auth.uid == request.resource.data.uid;
+    }
+  }
+}
