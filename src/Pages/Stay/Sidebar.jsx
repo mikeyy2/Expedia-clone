@@ -31,7 +31,7 @@ const handlePriceChange = (e) => {
     order && (params["_order"] = order);
     setSearchParams(params);
 
-    dispatch(fetchingHotels(sort, order,));
+    dispatch(fetchingHotels(sort, order, 1));
   }, [sort, order]);
 
   return (

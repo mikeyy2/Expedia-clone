@@ -37,7 +37,7 @@ const StayData = () => {
   // }, [dispatch]);
 
   useEffect(() => {
-    if (data) {
+    if (Array.isArray(data)) {
       setFilteredHotel(
         data.filter(
           (hotel) =>
@@ -45,7 +45,8 @@ const StayData = () => {
             hotel.price <= selectedPriceRange[1]
         )
       );
-      console.log(filteredHotel);
+    } else {
+      setFilteredHotel([]);
     }
   }, [data, selectedPriceRange]);
 
