@@ -67,23 +67,14 @@ export const Register = () => {
   };
 
   // oonCapture
-  // Build the reCAPTCHA verifier once and reuse it. Constructing a second one
-  // against the same container throws "reCAPTCHA has already been rendered in
-  // this element", which used to land in an empty catch and hang the button.
-  // No callback here either: the old one re-entered handleVerifyNumber, which
-  // called onCapture again and re-triggered the same error.
-  function onCapture() {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        "recaptcha-container",
-        { size: "invisible" },
-        auth
-      );
-    }
-    return window.recaptchaVerifier;
-  }
-
-  // Let the next attempt start from a clean verifier after a failure.
+  // Tear down any previous verifier before building a new one.
+  //
+  // window.recaptchaVerifier outlives this component: it survives navigating
+  // between /login and /register and any remount, but the #recaptcha-container
+  // div it rendered into does not. Reusing a verifier whose container has been
+  // replaced throws "reCAPTCHA has already been rendered in this element", so
+  // caching it was not enough - it has to be cleared and rebuilt each time, and
+  // the container emptied, because grecaptcha can leave nodes behind.
   function resetCaptcha() {
     try {
       window.recaptchaVerifier?.clear?.();
@@ -91,6 +82,18 @@ export const Register = () => {
       /* already torn down */
     }
     window.recaptchaVerifier = null;
+    const container = document.getElementById("recaptcha-container");
+    if (container) container.innerHTML = "";
+  }
+
+  function onCapture() {
+    resetCaptcha();
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      "recaptcha-container",
+      { size: "invisible" },
+      auth
+    );
+    return window.recaptchaVerifier;
   }
 
   //   Verify button
@@ -98,7 +101,6 @@ export const Register = () => {
     document.querySelector("#nextButton").innerText = "Please wait...";
     const countryCode = process.env.REACT_APP_PHONE_COUNTRY_CODE || "+1";
     const phoneNumber = `${countryCode}${number}`;
-    const appVerifier = onCapture();
     if (number.length === 10) {
       if (exist) {
         document.querySelector("#nextButton").innerText = "Next";
@@ -106,6 +108,7 @@ export const Register = () => {
           "That number is already registered - use Sign In instead.";
         document.querySelector("#loginMesageSuccess").innerHTML = ``;
       } else {
+        const appVerifier = onCapture();
         signInWithPhoneNumber(auth, phoneNumber, appVerifier)
           .then((confirmationResult) => {
             // SMS sent. Prompt user to type the code from the message, then sign the
@@ -173,6 +176,8 @@ export const Register = () => {
 
   useEffect(() => {
     dispatch(fetch_users);
+    // Leaving this page invalidates the rendered widget.
+    return () => resetCaptcha();
   }, []);
 
   return (
