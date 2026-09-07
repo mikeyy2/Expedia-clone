@@ -18,7 +18,7 @@ export const Destination = () => {
   
   
   useEffect(()=>{
-    axios.get(`https://happy-sunglasses-eel.cyclic.app/Things_todo?place=${place}`).then((response) => {
+    axios.get(`http://localhost:8080/Things_todo?place=${place}`).then((response) => {
         setPlaces(response.data)
      console.log(response.data)
     });
