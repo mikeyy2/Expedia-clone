@@ -13,7 +13,10 @@
 
 const fs = require("fs");
 const path = require("path");
-const admin = require("firebase-admin");
+// firebase-admin v13+ removed the namespaced `admin.credential` / `admin.firestore`
+// API. These subpath imports are the supported form.
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 const DRY_RUN = process.argv.includes("--dry");
 const ROOT = path.join(__dirname, "..");
@@ -41,8 +44,8 @@ async function main() {
   }
 
   const serviceAccount = require(KEY_PATH);
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-  const db = admin.firestore();
+  initializeApp({ credential: cert(serviceAccount) });
+  const db = getFirestore();
 
   const raw = JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
   let grandTotal = 0;
@@ -73,7 +76,7 @@ async function main() {
         const { id: _drop, ...fields } = item;
         batch.set(db.collection(collectionName).doc(id), {
           ...fields,
-          migratedAt: admin.firestore.FieldValue.serverTimestamp(),
+          migratedAt: FieldValue.serverTimestamp(),
         });
       });
 
