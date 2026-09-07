@@ -69,8 +69,14 @@ export const fetch_users = (dispatch) => {
 
 export const login_user = (loginData) => (dispatch) => {
   dispatch(login_success(loginData));
-  // localStorage.setItem("MkuserData", JSON.stringify(loginData));
-  // localStorage.setItem("MkisAuth", JSON.stringify(true));
+  // The reducer restores isAuth/activeUser from localStorage on init, and
+  // logout_user already clears these keys - but the writes here were commented
+  // out, so every post-login redirect reloaded the page straight back into a
+  // signed-out state. Password is stripped; nothing reads it after sign-in and
+  // it has no business sitting in localStorage.
+  const { password, ...safeUser } = loginData || {};
+  localStorage.setItem("MkuserData", JSON.stringify(safeUser));
+  localStorage.setItem("MkisAuth", JSON.stringify(true));
 };
 
 export const logout_user = (dispatch) => {
