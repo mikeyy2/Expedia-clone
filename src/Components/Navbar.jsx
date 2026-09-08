@@ -31,8 +31,22 @@ import {
   import {MdOutlineFlight} from 'react-icons/md'
   import {AiFillCar} from 'react-icons/ai'
   import {Link as RouterLink} from 'react-router-dom'
+  import {useDispatch, useSelector} from 'react-redux'
+  import {logout_user} from '../Redux/Authantication/auth.action'
   
   export default function Navbar() {
+    // The navbar previously showed a hardcoded "SignIn" link whether or not the
+    // user was signed in, and logout_user was never wired to anything, so there
+    // was no way to sign out or to tell that sign-in had worked.
+    const dispatch = useDispatch();
+    const { isAuth, activeUser } = useSelector((store) => ({
+      isAuth: store.LoginReducer.isAuth,
+      activeUser: store.LoginReducer.activeUser,
+    }));
+    const handleLogout = () => {
+      dispatch(logout_user);
+      window.location = "/";
+    };
     const { isOpen, onToggle } = useDisclosure();
     const { colorMode, toggleColorMode } = useColorMode();
     const myColor = useColorModeValue('light','dark')
@@ -93,11 +107,28 @@ import {
             <Box fontWeight={'500'} fontSize={{base:'16px',sm:'23px'}}  display={'flex'} >
                 <Icon mt={0.5} mr={1}   as={IoIosNotifications} />
             </Box>
-             <RouterLink to="/login">
-            <Box fontWeight={'500'}  fontSize={{base:'12px',sm:'16px'}}  mr={9} >
-                SignIn
-            </Box>
-            </RouterLink>
+            {isAuth ? (
+              <Box display={'flex'} alignItems={'center'} mr={9}>
+                <Box fontWeight={'600'} fontSize={{base:'12px',sm:'16px'}} mr={3}>
+                  Hi, {activeUser?.user_name || 'traveler'}
+                </Box>
+                <Box
+                  as="button"
+                  onClick={handleLogout}
+                  fontWeight={'500'}
+                  fontSize={{base:'12px',sm:'16px'}}
+                  textDecoration={'underline'}
+                >
+                  Sign out
+                </Box>
+              </Box>
+            ) : (
+              <RouterLink to="/login">
+                <Box fontWeight={'500'} fontSize={{base:'12px',sm:'16px'}} mr={9}>
+                  SignIn
+                </Box>
+              </RouterLink>
+            )}
             <Button onClick={toggleColorMode}>
                 {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
             </Button>
