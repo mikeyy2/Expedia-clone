@@ -1,89 +1,109 @@
-<h1>Chalo Ghume</h1>
+# Expedia Clone
 
-<p>This project is a clone of the Expedia website, created by Team of 5 starting with Kumkum (Team Lead), Ashish, Amit, Sagar Balsaraf, and Sarim . The purpose of this project is to showcase our skills and knowledge in HTML, CSS, JavaScript, React, Redux, and Json-Server.<p>
+A React + Redux travel booking web app inspired by Expedia. Users can search and browse hotels, flights, and things to do, manage a cart, and sign in via phone number + OTP (Firebase Authentication). Includes a basic admin panel for managing listings.
 
+This project was built for **SE 3290 – Software Project Management (Fall 2026)** as the "Prelude Project," using an existing open-source codebase as the vehicle for practicing full project lifecycle management: setup, deployment, debugging, and documentation.
 
-<h2>Tech Stack</h2>
+## Features
 
-- HTML
-- CSS
-- JavaScript
-- React
-- Redux
-- Json-Server
-- firebase
+**User**
+- Landing page
+- Sign up / sign in via phone number + OTP (Firebase Authentication)
+- Browse and search hotels, flights, and things to do
+- Sort and filter results (by price, rating)
+- Add items to cart
+- Book flights and hotels
 
+**Admin**
+- Manage hotel listings
+- View bookings and user data
+- Oversee cart and transaction activity
 
-<h2>Dependency</h2>
+## Tech Stack
 
-- axios
-- redux
-- react-redux
-- redux thunk
-- chakraUI
-- firebase
-- font-awesome
-- json-server
-- react-router-dom
-- better-react-carousel
+- **Frontend:** React, Redux (with Redux Thunk), React Router, Chakra UI
+- **Auth:** Firebase Authentication (Phone/OTP)
+- **Mock Backend / Data:** [json-server](https://github.com/typicode/json-server) serving `db.json` (hotels, flights, users, things to do)
+- **HTTP Client:** Axios
 
-<h2>Features</h2>
+## Getting Started
 
-- Landing Page
-- Login and signup via firebase (OTP).
-- View details of flights, hotels.
-- Search for flights, hotels, and holiday packages
-- Sorting & Filtering and Seraching
-- Book flights, hotels.
-- Cart Section
-- Admin Panel
+### Prerequisites
 
-<h2>Installation</h2>
+- [Node.js](https://nodejs.org/) (v16+ recommended)
+- A [Firebase](https://console.firebase.google.com/) account (free tier is sufficient)
 
-To run this project locally, follow the steps below:
+### 1. Clone the repository
 
-. Clone the repository by running the following command:
-git clone https://github.com/kumkumdutta/interesting-stretch-8935.git
+```bash
+git clone https://github.com/YOUR-USERNAME/Expedia-clone.git
+cd Expedia-clone
+```
 
-. Navigate to the project directory:
-cd hesitant-river-6235
+### 2. Install dependencies
 
-. Install the dependencies:
+```bash
 npm install
+```
 
-. Start the server:
-npm start
+This project also relies on `json-server` for local mock data. It's used at a pinned older version (`0.17.4`) because the current major version of json-server changed its pagination response format in a way this app doesn't expect:
 
-. Start JSON- Server:
+```bash
+npm install json-server@0.17.4 --save-dev
+```
+
+### 3. Set up Firebase
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+2. Under **Build > Authentication**, enable **Phone** as a sign-in method.
+3. Under **Project Settings > General > Your apps**, register a new Web app and copy the config object.
+4. Paste your config into `src/firebase.js` (or the equivalent config file), replacing the placeholder values.
+
+> Note: Phone/OTP auth requires reCAPTCHA, which Firebase sets up automatically for web apps. Sending real SMS messages in production requires Firebase's Blaze (pay-as-you-go) plan.
+
+### 4. Run the app locally
+
+This app needs **two processes running simultaneously** in separate terminals:
+
+**Terminal 1 — mock data server:**
+```bash
 npm run server
+```
+Starts `json-server` on `http://localhost:8080`, serving hotel/flight/user data from `db.json`.
 
-. Open the website in your browser:
-http://localhost:3000/
+**Terminal 2 — React app:**
+```bash
+npm start
+```
+Opens the app at `http://localhost:3000`.
 
+## Known Limitations
 
-<h2>Deployment</h2>
+- "Cars" and "Things To Do" sections exist in the codebase but are outside the scope of this assignment and have not been fully verified.
+- Some ESLint warnings remain (unused variables, missing `useEffect` dependencies) — these do not affect functionality but are noted for future cleanup.
+- The original codebase pointed to a now-defunct hosted backend (`cyclic.app`); all API calls have been redirected to the local `json-server` instance for this deployment.
 
-This project has been deployed using Vercel at the following URL:
+## Deployment
 
-https://interesting-stretch-8935-liart.vercel.app/
+This project can be deployed to a cloud host such as [Vercel](https://vercel.com/):
 
+1. Push your repository to GitHub.
+2. Connect the repo to Vercel.
+3. Add your Firebase config as environment variables in the Vercel project settings.
+4. Deploy, then verify authentication, search, and booking work on the live URL.
 
-This is Login and Signup pages:-
-![login](https://user-images.githubusercontent.com/112754519/231046318-135d34cb-0ae7-46c3-851c-6889441c62de.PNG)
+## Contributing
 
+Contributions are welcome! To contribute:
 
+1. Fork this repository.
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Make your changes and commit: `git commit -m "Add: description of your change"`
+4. Push to your fork: `git push origin feature/your-feature-name`
+5. Open a Pull Request describing your changes.
 
-This is the Stays Page:-
-![stays](https://user-images.githubusercontent.com/112754519/231046349-d9885d9f-b42d-4d9f-bfc2-0cac0f9a10df.PNG)
+Please keep pull requests focused on a single feature or fix, and describe any manual testing you performed (e.g., "tested sign-in flow with a real phone number").
 
+## License
 
-
-This is the Flight Page:-
-![Flight](https://user-images.githubusercontent.com/112754519/231046392-fea5d486-9b26-462c-af9a-5727853e6669.PNG)
-
-
-
-This is the Admin Page:-
-![Admin](https://user-images.githubusercontent.com/112754519/231046415-c8c2f14c-f586-4da0-884a-992bc18b0e12.PNG)
-
-
+This project is for educational purposes as part of a university course assignment.
